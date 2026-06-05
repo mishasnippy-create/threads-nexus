@@ -9,8 +9,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, isTop, scorePercent }: PostCardProps) {
-  const text =
-    post.text.length > 300 ? post.text.slice(0, 300) + "…" : post.text;
+  const text = post.text.length > 320 ? post.text.slice(0, 320) + "…" : post.text;
 
   return (
     <article
@@ -18,44 +17,39 @@ export default function PostCard({ post, isTop, scorePercent }: PostCardProps) {
       aria-label={isTop ? "Top performing post" : "Post"}
     >
       {isTop && (
-        <span className={`${styles.topBadge} mono`} aria-label="Top post">
-          TOP
-        </span>
+        <span className={styles.topBadge} aria-label="Top post">TOP</span>
       )}
 
       <p className={styles.text}>{text}</p>
 
       <div className={styles.meta}>
         {post.category && (
-          <span className={`${styles.cat} mono`}>{post.category}</span>
+          <span className={styles.cat}>{post.category}</span>
         )}
-        <span className={`${styles.stat} mono`}>
+        <span className={styles.stat}>
           <span className={styles.icon}>◎</span>
-          {fmt(post.views)}
+          <span className={styles.statVal}>{fmt(post.views)}</span>
         </span>
-        <span className={`${styles.stat} mono`}>
+        <span className={styles.stat}>
           <span className={styles.icon}>♥</span>
-          {fmt(post.likes)}
+          <span className={styles.statVal}>{fmt(post.likes)}</span>
         </span>
-        <span className={`${styles.stat} mono`}>
+        <span className={styles.stat}>
           <span className={styles.icon}>⟳</span>
-          {fmt(post.reposts)}
+          <span className={styles.statVal}>{fmt(post.reposts)}</span>
         </span>
-        <span className={`${styles.stat} ${styles.scoreVal} mono`}>
+        <span className={`${styles.stat} ${styles.scoreVal}`}>
           <span className={styles.icon}>★</span>
-          {fmt(post.score)}
+          <span className={styles.statVal}>{fmt(post.score)}</span>
         </span>
         {post.time && (
-          <span className={`${styles.time} mono`}>{timeAgo(post.time)}</span>
+          <span className={styles.time}>{timeAgo(post.time)}</span>
         )}
       </div>
 
       {Number(post.score) > 0 && (
         <div className={styles.barWrap} role="presentation">
-          <div
-            className={styles.bar}
-            style={{ width: `${scorePercent}%` }}
-          />
+          <div className={styles.bar} style={{ width: `${scorePercent}%` }} />
         </div>
       )}
     </article>

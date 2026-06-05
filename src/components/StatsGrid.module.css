@@ -2,46 +2,36 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 560px) {
+@media (max-width: 800px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .grid > *:last-child:nth-child(odd) {
+    grid-column: span 2;
   }
 }
 
 .card {
   background: var(--bg3);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 20px;
+  border-radius: 14px;
+  padding: 20px 20px 18px;
   position: relative;
   overflow: hidden;
   transition: border-color 0.2s ease, background 0.2s ease;
+  cursor: default;
 }
 
-.card::after {
+.card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(200, 255, 0, 0.4) 50%,
-    transparent 100%
-  );
+  inset: 0;
+  background: radial-gradient(ellipse at top left, rgba(200,255,0,0.04) 0%, transparent 60%);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.3s;
 }
 
 .card:hover {
@@ -49,35 +39,64 @@
   background: var(--bg4);
 }
 
-.card:hover::after {
+.card:hover::before {
   opacity: 1;
 }
 
 .label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text3);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  font-family: 'Space Mono', monospace;
 }
 
 .value {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: var(--text);
   line-height: 1;
+  letter-spacing: -0.02em;
   transition: opacity 0.3s;
 }
 
+@media (max-width: 800px) {
+  .value {
+    font-size: 38px;
+  }
+}
+
 .shimmer {
-  opacity: 0.3;
+  opacity: 0.2;
+}
+
+.accent {
+  color: var(--accent);
 }
 
 .icon {
   position: absolute;
-  right: 16px;
+  right: 14px;
   top: 16px;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text4);
   line-height: 1;
+}
+
+/* Scanline shimmer on load */
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(200,255,0,0.03), transparent);
+  animation: scanline 3s ease-in-out infinite;
+}
+
+@keyframes scanline {
+  0% { left: -60%; }
+  100% { left: 160%; }
 }

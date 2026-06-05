@@ -1,8 +1,8 @@
 .card {
   background: var(--bg3);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 22px;
+  border-radius: 14px;
+  padding: 20px 22px;
   position: relative;
   transition: border-color 0.18s ease, background 0.18s ease;
 }
@@ -13,39 +13,61 @@
 }
 
 .topCard {
-  border-color: rgba(200, 255, 0, 0.22);
+  border-color: rgba(200, 255, 0, 0.25);
   background: linear-gradient(
-    135deg,
-    var(--bg3) 0%,
-    rgba(200, 255, 0, 0.025) 100%
+    145deg,
+    rgba(200, 255, 0, 0.04) 0%,
+    var(--bg3) 40%
   );
 }
 
 .topCard:hover {
-  border-color: rgba(200, 255, 0, 0.36);
+  border-color: rgba(200, 255, 0, 0.4);
+}
+
+/* Glowing left border on top post */
+.topCard::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 12px var(--accent), 0 0 24px rgba(200,255,0,0.3);
 }
 
 .topBadge {
   position: absolute;
-  top: 14px;
+  top: 16px;
   right: 16px;
   background: var(--accent);
   color: #000;
   font-size: 9px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 4px 10px;
   border-radius: 20px;
   letter-spacing: 0.1em;
+  font-family: 'Space Mono', monospace;
 }
 
 .text {
-  font-size: 13.5px;
-  line-height: 1.65;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
   color: var(--text);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   white-space: pre-wrap;
   word-break: break-word;
-  padding-right: 48px;
+  padding-right: 52px;
+}
+
+@media (max-width: 600px) {
+  .text {
+    font-size: 15px;
+    padding-right: 44px;
+  }
 }
 
 .meta {
@@ -53,43 +75,50 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0;
-  row-gap: 4px;
+  row-gap: 6px;
 }
 
 .cat {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--accent);
   background: var(--accent-faint);
-  border: 1px solid rgba(200, 255, 0, 0.18);
-  padding: 2px 9px;
-  border-radius: 4px;
-  margin-right: 12px;
+  border: 1px solid rgba(200, 255, 0, 0.2);
+  padding: 3px 10px;
+  border-radius: 5px;
+  margin-right: 14px;
   white-space: nowrap;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+  font-family: 'Space Mono', monospace;
+  font-weight: 400;
 }
 
 .stat {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text3);
-  padding: 0 10px;
+  padding: 0 12px;
   border-right: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 5px;
   white-space: nowrap;
+  font-family: 'Space Mono', monospace;
 }
 
 .stat:last-of-type {
   border-right: none;
 }
 
-.scoreVal {
+.statVal {
   color: var(--text2);
 }
 
+.scoreVal .statVal {
+  color: var(--accent);
+}
+
 .icon {
-  font-size: 10px;
-  opacity: 0.6;
+  font-size: 11px;
+  opacity: 0.5;
 }
 
 .time {
@@ -98,10 +127,11 @@
   margin-left: auto;
   padding-left: 12px;
   white-space: nowrap;
+  font-family: 'Space Mono', monospace;
 }
 
 .barWrap {
-  margin-top: 10px;
+  margin-top: 14px;
   height: 2px;
   background: var(--bg5);
   border-radius: 2px;
@@ -110,7 +140,7 @@
 
 .bar {
   height: 100%;
-  background: linear-gradient(90deg, rgba(200, 255, 0, 0.35), var(--accent));
+  background: linear-gradient(90deg, rgba(200, 255, 0, 0.25), var(--accent));
   border-radius: 2px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }

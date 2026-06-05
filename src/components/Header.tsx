@@ -10,39 +10,33 @@ interface HeaderProps {
 
 export default function Header({ status, countdown, onRefresh }: HeaderProps) {
   const statusLabel =
-    status === "live"
-      ? "live"
-      : status === "loading"
-      ? "connecting..."
-      : status === "error"
-      ? "error"
-      : "idle";
+    status === "live" ? "live"
+    : status === "loading" ? "sync..."
+    : status === "error" ? "error"
+    : "idle";
 
   return (
     <header className={styles.header}>
       <div className={styles.left}>
-        <span className={`${styles.title} mono`}>THREADS NEXUS</span>
+        <span className={styles.title}>THREADS NEXUS</span>
         <span className={styles.subtitle}>live system dashboard</span>
       </div>
       <div className={styles.right}>
-        <span
-          className={styles.dot}
-          data-status={status}
-          aria-hidden="true"
-        />
-        <span className={`${styles.statusText} mono`}>{statusLabel}</span>
-        {status === "live" && (
-          <span className={`${styles.countdown} mono`}>
-            refresh in {countdown}s
-          </span>
-        )}
+        <div className={styles.statusGroup}>
+          <span className={styles.dot} data-status={status} aria-hidden="true" />
+          <span className={styles.statusText}>{statusLabel}</span>
+          {status === "live" && (
+            <span className={styles.countdown}>{countdown}s</span>
+          )}
+        </div>
         <button
-          className={`${styles.refreshBtn} mono`}
+          className={styles.refreshBtn}
           onClick={onRefresh}
           disabled={status === "loading"}
           aria-label="Refresh data"
+          title="Refresh"
         >
-          ↻ refresh
+          ↻
         </button>
       </div>
     </header>
