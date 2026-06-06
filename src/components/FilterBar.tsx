@@ -1,5 +1,4 @@
 "use client";
-
 import styles from "./FilterBar.module.css";
 
 interface FilterBarProps {
@@ -8,30 +7,15 @@ interface FilterBarProps {
   onChange: (cat: string) => void;
 }
 
-export default function FilterBar({
-  categories,
-  active,
-  onChange,
-}: FilterBarProps) {
+export default function FilterBar({ categories, active, onChange }: FilterBarProps) {
   return (
-    <div className={styles.bar} role="group" aria-label="Filter by category">
-      <button
-        className={`${styles.btn} mono ${active === "all" ? styles.active : ""}`}
-        onClick={() => onChange("all")}
-        aria-pressed={active === "all"}
-      >
-        ALL
-      </button>
-      {categories.map((cat) => (
-        <button
-          key={cat}
-          className={`${styles.btn} mono ${active === cat ? styles.active : ""}`}
-          onClick={() => onChange(cat)}
-          aria-pressed={active === cat}
-        >
-          {cat}
-        </button>
-      ))}
+    <div className={styles.wrap}>
+      <div className={styles.bar} role="group" aria-label="Фильтр по категории">
+        <button className={`${styles.btn} ${active === "all" ? styles.active : ""}`} onClick={() => onChange("all")}>Все</button>
+        {categories.map((cat) => (
+          <button key={cat} className={`${styles.btn} ${active === cat ? styles.active : ""}`} onClick={() => onChange(cat)}>{cat}</button>
+        ))}
+      </div>
     </div>
   );
 }
