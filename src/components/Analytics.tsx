@@ -1,211 +1,299 @@
-'use client';
-import { useState } from 'react';
-import { Post, SortMetric } from '@/lib/types';
-import { fmt, getCategoryStats, getHourStats } from '@/lib/utils';
-import styles from './Analytics.module.css';
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { Post } from "@/lib/types";
+import styles from "./Analytics.module.css";
 
 interface Props { posts: Post[]; }
 
-const METRIC_LABELS: Record<SortMetric, string> = {
-  views: 'Просмотры',
-  likes: 'Лайки',
-  reposts: 'Репосты',
-  score: 'Score',
+type Metric = "views" | "likes" | "reposts" | "score";
+
+const METRIC_LABELS: Record<Metric, string> = {
+  views: "Просмотры",
+  likes: "Лайки",
+  reposts: "Репосты",
+  score: "Score",
 };
 
-const METRIC_COLORS: Record<SortMetric, string> = {
-  views: 'var(--green)',
-  likes: 'var(--violet)',
-  reposts: 'var(--blue)',
-  score: 'var(--green)',
+const COLORS = {
+  views: "#c8ff00",
+  likes: "#a78bfa",
+  reposts: "#4d9eff",
+  score: "#ff8c42",
 };
 
 export default function Analytics({ posts }: Props) {
-  const [activeMetric, setActiveMetric] = useState<SortMetric>('score');
+  const byHourRef = useRef<HTMLCanvasElement>(null);
+  const byCatRef = useRef<HTMLCanvasElement>(null);
+  const trendRef = useRef<HTMLCanvasElement>(null);
+  const multiRef = useRef<HTMLCanvasElement>(null);
+  const [metric, setMetric] = useState<Metric>("views");
 
-  const catStats = getCategoryStats(posts);
-  const hourStats = getHourStats(posts);
+  // Category stats
+  const catStats: Record<string, Record<Metric, number> & { count: number }> = {};
+  posts.forEach((p) => {
+    const c = p.category || "Без категории";
+    if (!catStats[c]) catStats[c] = { views: 0, likes: 0, reposts: 0, score: 0, count: 0 };
+    catStats[c].views += p.views;
+    catStats[c].likes += p.likes;
+    catStats[c].reposts += p.reposts;
+    catStats[c].score += p.score;
+    catStats[c].count += 1;
+  });
+  const cats = Object.keys(catStats);
 
-  const maxCat = Math.max(...catStats.map((c) => c[activeMetric]), 1);
-  const maxHour = Math.max(...hourStats.map((h) => h.avgScore), 1);
+  // Hour stats
+  const hourStats: Record<number, { total: number; count: number }> = {};
+  posts.forEach((p) => {
+    const h = Number(p.hour);
+    if (!isNaN(h)) {
+      if (!hourStats[h]) hourStats[h] = { total: 0, count: 0 };
+      hourStats[h].total += p.score;
+      hourStats[h].count += 1;
+    }
+  });
 
-  // Last 7 posts trend
-  const last7 = [...posts].slice(0, 7).reverse();
-  const maxTrend = Math.max(...last7.map((p) => p.score), 1);
+  // Trend — last 10 posts by time
+  const sorted = [...posts].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+  const trend = sorted.slice(-10);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let charts: any[] = [];
+
+    const load = () => {
+      const Chart = (window as any).Chart;
+      if (!Chart) return;
+
+      Chart.defaults.color = "#666";
+      Chart.defaults.borderColor = "rgba(255,255,255,0.06)";
+      Chart.defaults.font.family = "'Space Mono', monospace";
+      Chart.defaults.font.size = 10;
+
+      const destroy = (ref: React.RefObject<HTMLCanvasElement>) => {
+        const existing = (Chart as any).getChart(ref.current!);
+        if (existing) existing.destroy();
+      };
+
+      // 1. By hour
+      if (byHourRef.current) {
+        destroy(byHourRef);
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+        const avgScores = hours.map((h) => {
+          const s = hourStats[h];
+          return s ? Math.round(s.total / s.count) : 0;
+        });
+        charts.push(new Chart(byHourRef.current, {
+          type: "bar",
+          data: {
+            labels: hours.map((h) => `${h}:00`),
+            datasets: [{
+              data: avgScores,
+              backgroundColor: hours.map((h) => avgScores[h] === Math.max(...avgScores) ? "#c8ff00" : "rgba(200,255,0,0.2)"),
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+              y: { ticks: { callback: (v: number) => v >= 1000 ? (v/1000).toFixed(1)+"K" : v } },
+            },
+          },
+        }));
+      }
+
+      // 2. By category (selected metric)
+      if (byCatRef.current) {
+        destroy(byCatRef);
+        const vals = cats.map((c) => Math.round(catStats[c][metric] / catStats[c].count));
+        const maxVal = Math.max(...vals, 1);
+        charts.push(new Chart(byCatRef.current, {
+          type: "bar",
+          data: {
+            labels: cats.map((c) => c.length > 18 ? c.slice(0, 18) + "…" : c),
+            datasets: [{
+              data: vals,
+              backgroundColor: vals.map((v) => v === maxVal ? COLORS[metric] : `${COLORS[metric]}33`),
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { callback: (v: number) => v >= 1000 ? (v/1000).toFixed(1)+"K" : v } },
+              y: { ticks: { font: { size: 9 } } },
+            },
+          },
+        }));
+      }
+
+      // 3. Trend — last 10
+      if (trendRef.current) {
+        destroy(trendRef);
+        charts.push(new Chart(trendRef.current, {
+          type: "line",
+          data: {
+            labels: trend.map((_, i) => `#${i + 1}`),
+            datasets: [{
+              data: trend.map((p) => p.score),
+              borderColor: "#c8ff00",
+              backgroundColor: "rgba(200,255,0,0.08)",
+              borderWidth: 2,
+              pointBackgroundColor: "#c8ff00",
+              pointRadius: 4,
+              tension: 0.4,
+              fill: true,
+            }],
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: (v: number) => v >= 1000 ? (v/1000).toFixed(1)+"K" : v } } },
+          },
+        }));
+      }
+
+      // 4. Multi-line по категориям
+      if (multiRef.current) {
+        destroy(multiRef);
+        const metrics: Metric[] = ["views", "likes", "reposts", "score"];
+        charts.push(new Chart(multiRef.current, {
+          type: "line",
+          data: {
+            labels: cats.map((c) => c.length > 14 ? c.slice(0, 14) + "…" : c),
+            datasets: metrics.map((m) => ({
+              label: METRIC_LABELS[m],
+              data: cats.map((c) => Math.round(catStats[c][m] / catStats[c].count)),
+              borderColor: COLORS[m],
+              backgroundColor: "transparent",
+              borderWidth: 2,
+              pointBackgroundColor: COLORS[m],
+              pointRadius: 3,
+              tension: 0.3,
+            })),
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: { ticks: { font: { size: 9 } } },
+              y: { ticks: { callback: (v: number) => v >= 1000 ? (v/1000).toFixed(1)+"K" : v } },
+            },
+          },
+        }));
+      }
+    };
+
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
+    script.onload = load;
+    if ((window as any).Chart) { load(); } else { document.head.appendChild(script); }
+
+    return () => { charts.forEach((c) => { try { c.destroy(); } catch {} }); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [posts, metric]);
+
+  if (posts.length === 0) {
+    return <div className={styles.empty}>◌<br />Нет данных для анализа</div>;
+  }
+
+  // Best post of week
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const weekPosts = posts.filter((p) => new Date(p.time).getTime() > weekAgo);
+  const bestWeek = weekPosts.length > 0
+    ? weekPosts.reduce((a, b) => a.score > b.score ? a : b)
+    : posts[0];
+
+  const avgER = posts.filter((p) => p.views > 0).reduce((s, p) => s + (p.likes / p.views) * 100, 0) / Math.max(posts.filter((p) => p.views > 0).length, 1);
 
   return (
     <div className={styles.wrap}>
 
-      {/* Chart 1: Categories bar chart */}
-      <section className={styles.section}>
-        <div className={styles.sectionHead}>
-          <h3 className={styles.title}>По категориям</h3>
-          <div className={styles.metricPicker}>
-            {(Object.keys(METRIC_LABELS) as SortMetric[]).map((m) => (
-              <button
-                key={m}
-                className={`${styles.mBtn} ${activeMetric === m ? styles.mActive : ''}`}
-                style={activeMetric === m ? { borderColor: METRIC_COLORS[m], color: METRIC_COLORS[m] } : {}}
-                onClick={() => setActiveMetric(m)}
-              >
-                {METRIC_LABELS[m]}
-              </button>
-            ))}
+      {/* Пост недели */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>🏆 Пост недели</div>
+        <div className={styles.bestPost}>
+          <p className={styles.bestText}>{bestWeek.text.slice(0, 200)}{bestWeek.text.length > 200 ? "…" : ""}</p>
+          <div className={styles.bestMeta}>
+            <span className={styles.bestStat} style={{ color: "var(--green)" }}>★ {bestWeek.score.toLocaleString()}</span>
+            <span className={styles.bestStat}>◎ {bestWeek.views.toLocaleString()}</span>
+            <span className={styles.bestStat}>♥ {bestWeek.likes}</span>
+            <span className={styles.bestCat}>{bestWeek.category}</span>
           </div>
         </div>
+      </div>
 
-        <div className={styles.catChart}>
-          {catStats.sort((a, b) => b[activeMetric] - a[activeMetric]).map((c) => {
-            const pct = Math.round((c[activeMetric] / maxCat) * 100);
-            return (
-              <div key={c.cat} className={styles.catRow}>
-                <span className={styles.catLabel}>{c.cat}</span>
-                <div className={styles.catBarWrap}>
-                  <div
-                    className={styles.catBar}
-                    style={{ width: `${pct}%`, background: METRIC_COLORS[activeMetric] }}
-                  />
-                </div>
-                <span className={styles.catVal} style={{ color: METRIC_COLORS[activeMetric] }}>
-                  {fmt(c[activeMetric])}
-                </span>
-              </div>
-            );
-          })}
+      {/* Сводка ER */}
+      <div className={styles.erRow}>
+        <div className={styles.erCard}>
+          <div className={styles.erLabel}>Ср. вовлечённость</div>
+          <div className={styles.erValue} style={{ color: "var(--purple)" }}>{avgER.toFixed(2)}%</div>
         </div>
-      </section>
+        <div className={styles.erCard}>
+          <div className={styles.erLabel}>Лучший час</div>
+          <div className={styles.erValue} style={{ color: "var(--green)" }}>
+            {Object.entries(hourStats).sort((a, b) => (b[1].total / b[1].count) - (a[1].total / a[1].count))[0]?.[0] ?? "—"}:00
+          </div>
+        </div>
+        <div className={styles.erCard}>
+          <div className={styles.erLabel}>Топ категория</div>
+          <div className={styles.erValue} style={{ color: "var(--blue)", fontSize: "13px" }}>
+            {cats.sort((a, b) => (catStats[b].score / catStats[b].count) - (catStats[a].score / catStats[a].count))[0]?.slice(0, 16) ?? "—"}
+          </div>
+        </div>
+      </div>
 
-      {/* Chart 2: Multi-metric by category */}
-      <section className={styles.section}>
-        <h3 className={styles.title}>Все метрики</h3>
+      {/* График по часам */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Активность по часам (avg score)</div>
+        <div className={styles.chartWrap} style={{ height: 200 }}>
+          <canvas ref={byHourRef} role="img" aria-label="Активность по часам суток" />
+        </div>
+      </div>
+
+      {/* График по категориям */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>По категориям</div>
+        <div className={styles.metricTabs}>
+          {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
+            <button key={m} className={`${styles.mTab} ${metric === m ? styles.mTabActive : ""}`} onClick={() => setMetric(m)}>
+              {METRIC_LABELS[m]}
+            </button>
+          ))}
+        </div>
+        <div className={styles.chartWrap} style={{ height: Math.max(cats.length * 36 + 40, 160) }}>
+          <canvas ref={byCatRef} role="img" aria-label="Метрики по категориям" />
+        </div>
+      </div>
+
+      {/* Все метрики */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Все метрики по категориям</div>
         <div className={styles.legend}>
-          {(Object.keys(METRIC_LABELS) as SortMetric[]).map((m) => (
+          {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
             <span key={m} className={styles.legendItem}>
-              <span className={styles.legendDot} style={{ background: METRIC_COLORS[m] }} />
+              <span className={styles.legendDot} style={{ background: COLORS[m] }} />
               {METRIC_LABELS[m]}
             </span>
           ))}
         </div>
-        <div className={styles.multiChart}>
-          {catStats.map((c) => {
-            const maxAll = Math.max(c.views, c.likes, c.reposts, c.score, 1);
-            return (
-              <div key={c.cat} className={styles.multiCol}>
-                <div className={styles.multiBars}>
-                  {(['views', 'likes', 'reposts', 'score'] as SortMetric[]).map((m) => (
-                    <div
-                      key={m}
-                      className={styles.multiBar}
-                      style={{
-                        height: `${Math.round((c[m] / maxAll) * 80)}px`,
-                        background: METRIC_COLORS[m],
-                      }}
-                      title={`${METRIC_LABELS[m]}: ${fmt(c[m])}`}
-                    />
-                  ))}
-                </div>
-                <span className={styles.multiLabel}>{c.cat.slice(0, 8)}</span>
-              </div>
-            );
-          })}
+        <div className={styles.chartWrap} style={{ height: 220 }}>
+          <canvas ref={multiRef} role="img" aria-label="Все метрики по категориям" />
         </div>
-      </section>
+      </div>
 
-      {/* Chart 3: Hour activity */}
-      {hourStats.length > 0 && (
-        <section className={styles.section}>
-          <h3 className={styles.title}>Активность по часам</h3>
-          <p className={styles.subtitle}>Средний score по времени публикации</p>
-          <div className={styles.hourChart}>
-            {hourStats.map(({ hour, avgScore }) => {
-              const pct = Math.round((avgScore / maxHour) * 100);
-              const isTop = avgScore === maxHour;
-              return (
-                <div key={hour} className={styles.hourCol}>
-                  <div className={styles.hourBarWrap}>
-                    <div
-                      className={`${styles.hourBar} ${isTop ? styles.hourBarTop : ''}`}
-                      style={{ height: `${Math.max(pct, 4)}%` }}
-                    />
-                  </div>
-                  <span className={`${styles.hourLabel} ${isTop ? styles.hourLabelTop : ''}`}>
-                    {hour}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Trend last 7 posts */}
-      {last7.length > 1 && (
-        <section className={styles.section}>
-          <h3 className={styles.title}>Тренд последних {last7.length} постов</h3>
-          <div className={styles.trendChart}>
-            <svg viewBox={`0 0 ${last7.length * 40} 60`} className={styles.trendSvg} preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="trendGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#C8FF00" />
-                  <stop offset="100%" stopColor="#A78BFA" />
-                </linearGradient>
-                <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#C8FF00" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#A78BFA" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {(() => {
-                const pts = last7.map((p, i) => ({
-                  x: i * 40 + 20,
-                  y: 55 - Math.round((p.score / maxTrend) * 50),
-                }));
-                const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-                const fillPath = `${path} L ${pts[pts.length-1].x} 60 L ${pts[0].x} 60 Z`;
-                return (
-                  <>
-                    <path d={fillPath} fill="url(#trendFill)" />
-                    <path d={path} stroke="url(#trendGrad)" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                    {pts.map((p, i) => (
-                      <circle key={i} cx={p.x} cy={p.y} r="3" fill={i === last7.length - 1 ? '#C8FF00' : '#A78BFA'} />
-                    ))}
-                  </>
-                );
-              })()}
-            </svg>
-          </div>
-        </section>
-      )}
-
-      {/* Category table */}
-      <section className={styles.section}>
-        <h3 className={styles.title}>Сводка по категориям</h3>
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Категория</th>
-                <th>Постов</th>
-                <th>Avg Views</th>
-                <th>Avg Likes</th>
-                <th>Avg Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {catStats.sort((a,b) => b.score - a.score).map((c) => (
-                <tr key={c.cat}>
-                  <td>
-                    <span className={styles.catTag}>{c.cat}</span>
-                  </td>
-                  <td>{c.count}</td>
-                  <td style={{ color: 'var(--green)' }}>{fmt(c.views)}</td>
-                  <td style={{ color: 'var(--violet)' }}>{fmt(c.likes)}</td>
-                  <td style={{ color: 'var(--green)', fontWeight: 700 }}>{fmt(c.score)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Тренд */}
+      <div className={styles.section}>
+        <div className={styles.sectionTitle}>Тренд последних {trend.length} постов (score)</div>
+        <div className={styles.chartWrap} style={{ height: 180 }}>
+          <canvas ref={trendRef} role="img" aria-label="Тренд score последних постов" />
         </div>
-      </section>
+      </div>
 
     </div>
   );
