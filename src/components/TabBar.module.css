@@ -1,0 +1,66 @@
+.bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: var(--tab-h);
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  color: var(--text3);
+  transition: color 0.15s;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab.active {
+  color: var(--text);
+}
+
+.tab:nth-child(2).active { color: var(--violet); }
+.tab:nth-child(3).active { color: var(--violet); }
+.tab:nth-child(1).active { color: var(--green); }
+
+.icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.label {
+  font-size: 10px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+}
+
+.tab:nth-child(1) .indicator { background: var(--green); }
+.tab:nth-child(2) .indicator { background: var(--violet); }
+.tab:nth-child(3) .indicator { background: var(--violet); }
