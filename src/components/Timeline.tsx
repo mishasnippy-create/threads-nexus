@@ -8,6 +8,12 @@ interface Props { posts: Post[]; }
 function formatDate(ts: string): string {
   try {
     const d = new Date(ts);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (d.toDateString() === today.toDateString()) return "Сегодня";
+    if (d.toDateString() === yesterday.toDateString()) return "Вчера";
     return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
   } catch { return ts; }
 }
@@ -24,7 +30,6 @@ export default function Timeline({ posts }: Props) {
     return <div className={styles.empty}>◌<br />Нет публикаций</div>;
   }
 
-  // Sort by time desc, group by date
   const sorted = [...posts].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   const groups: { date: string; posts: Post[] }[] = [];
@@ -48,22 +53,20 @@ export default function Timeline({ posts }: Props) {
             {group.posts.map((post, pi) => {
               const er = post.views > 0 ? ((post.likes / post.views) * 100).toFixed(2) : "0.00";
               return (
-                <div key={pi} className={styles.entry}>
-                  <div className={styles.entryLeft}>
-                    <span className={styles.entryTime}>{formatTime(post.time)}</span>
-                    <div className={styles.entryLine} />
+                <article key={pi} className={styles.card}>
+                  <div className={styles.cardTop}>
+                    <span className={styles.time}>{formatTime(post.time)}</span>
+                    {post.category && <span className={styles.cat}>{post.category}</span>}
                   </div>
-                  <div className={styles.entryCard}>
-                    <p className={styles.entryText}>{post.text.slice(0, 240)}{post.text.length > 240 ? "…" : ""}</p>
-                    <div className={styles.entryMeta}>
-                      {post.category && <span className={styles.entryCat}>{post.category}</span>}
-                      <span className={styles.entryStat}><span className={styles.eIco}>◎</span>{fmt(post.views)}</span>
-                      <span className={styles.entryStat}><span className={styles.eIco}>♥</span>{fmt(post.likes)}</span>
-                      <span className={`${styles.entryStat} ${styles.scoreS}`}><span className={styles.eIco}>★</span>{fmt(post.score)}</span>
-                      <span className={`${styles.entryStat} ${styles.erS}`}><span className={styles.eIco}>%</span>{er}</span>
-                    </div>
+                  <p className={styles.text}>{post.text}</p>
+                  <div className={styles.meta}>
+                    <span className={styles.stat}><span className={styles.ico}>👁</span>{fmt(post.views)}</span>
+                    <span className={styles.stat}><span className={styles.ico}>❤️</span>{fmt(post.likes)}</span>
+                    <span className={styles.stat}><span className={styles.ico}>🔁</span>{fmt(post.reposts)}</span>
+                    <span className={`${styles.stat} ${styles.score}`}><span className={styles.ico}>⚡</span>{fmt(post.score)}</span>
+                    <span className={styles.stat}><span className={styles.ico}>📊</span>{er}%</span>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

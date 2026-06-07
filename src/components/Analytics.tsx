@@ -356,13 +356,16 @@ export default function Analytics({ posts }: Props) {
       {/* Пост недели */}
       {bestWeek && (
         <div className={styles.section}>
-          <div className={styles.sectionTitle}>🏆 Пост недели</div>
+          <div className={styles.sectionTitle}>
+            <span className={styles.weekBadge}>НЕДЕЛЯ</span>
+            Лучший пост
+          </div>
           <div className={styles.bestPost}>
             <p className={styles.bestText}>{bestWeek.text.slice(0, 200)}{bestWeek.text.length > 200 ? "…" : ""}</p>
             <div className={styles.bestMeta}>
-              <span className={styles.bestStat} style={{ color: "var(--accent)" }}>★ {bestWeek.score.toLocaleString()}</span>
-              <span className={styles.bestStat}>◎ {bestWeek.views.toLocaleString()}</span>
-              <span className={styles.bestStat}>♥ {bestWeek.likes}</span>
+              <span className={styles.bestStat} style={{ color: "var(--accent)" }}>⚡ {bestWeek.score.toLocaleString()}</span>
+              <span className={styles.bestStat}>👁 {bestWeek.views.toLocaleString()}</span>
+              <span className={styles.bestStat}>❤️ {bestWeek.likes}</span>
               <span className={styles.bestCat}>{bestWeek.category}</span>
             </div>
           </div>
@@ -455,9 +458,9 @@ export default function Analytics({ posts }: Props) {
                   <p className={styles.topText}>{p.text.slice(0, 120)}{p.text.length > 120 ? "…" : ""}</p>
                   <div className={styles.topMeta}>
                     {p.category && <span className={styles.topCat}>{p.category}</span>}
-                    <span className={styles.topStat} style={{ color: "var(--accent)" }}>★ {p.score}</span>
-                    <span className={styles.topStat}>◎ {p.views}</span>
-                    <span className={styles.topStat}>♥ {p.likes}</span>
+                    <span className={styles.topStat} style={{ color: "var(--accent)" }}>⚡ {p.score}</span>
+                    <span className={styles.topStat}>👁 {p.views}</span>
+                    <span className={styles.topStat}>❤️ {p.likes}</span>
                   </div>
                 </div>
               </div>

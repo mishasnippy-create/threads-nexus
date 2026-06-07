@@ -19,9 +19,16 @@ export default function Header({ status, countdown, onRefresh }: HeaderProps) {
           <span className={styles.statusGroup}>
             <span className={styles.dot} data-status={status} aria-hidden="true" />
             <span className={styles.statusText}>
-              {status === "live" ? "в эфире" : status === "loading" ? "синхронизация..." : status === "error" ? "ошибка" : "ожидание"}
+              {status === "live"
+                ? countdown > 60
+                  ? `обновление через ${Math.floor(countdown / 60)} мин`
+                  : `обновление через ${countdown}с`
+                : status === "loading"
+                ? "синхронизация..."
+                : status === "error"
+                ? "ошибка"
+                : "ожидание"}
             </span>
-            {status === "live" && <span className={styles.countdown}>{countdown}с</span>}
           </span>
         </div>
         <button

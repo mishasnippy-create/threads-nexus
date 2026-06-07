@@ -11,7 +11,7 @@ import { Post, Stats } from "@/lib/types";
 import { API_URL, timeAgo } from "@/lib/utils";
 import styles from "./page.module.css";
 
-const REFRESH_INTERVAL = 45;
+const REFRESH_INTERVAL = 3600; // 1 hour
 type Status = "idle" | "loading" | "live" | "error";
 
 export default function DashboardPage() {
