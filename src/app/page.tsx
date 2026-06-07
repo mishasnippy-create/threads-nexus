@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import StatsGrid from "@/components/StatsGrid";
-import FilterBar from "@/components/FilterBar";
+
 import PostCard from "@/components/PostCard";
 import TabBar, { Tab } from "@/components/TabBar";
 import Analytics from "@/components/Analytics";
@@ -19,9 +19,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState("all");
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
-  const [categories, setCategories] = useState<string[]>([]);
   const [tab, setTab] = useState<Tab>("feed");
   const [lastUpdate, setLastUpdate] = useState("");
   const [showAllFeed, setShowAllFeed] = useState(false);
@@ -75,7 +73,6 @@ export default function DashboardPage() {
 
       setPosts(validPosts);
       setStats({ views: totViews, likes: totLikes, reposts: totReposts, score: totScore, posts: validPosts.length });
-      setCategories(cats);
       setLastUpdate(timeAgo(new Date().toISOString()));
       setStatus("live");
       startCountdown();
@@ -98,11 +95,11 @@ export default function DashboardPage() {
     return () => clearInterval(iv);
   }, [status]);
 
-  const filtered = filter === "all" ? posts : posts.filter((p) => p.category === filter);
+  
   // Top-5 by likes for feed preview
-  const topByLikes = [...filtered].sort((a, b) => b.likes - a.likes);
-  const feedPosts = showAllFeed ? filtered : topByLikes.slice(0, 5);
-  const maxScore = Math.max(...filtered.map((p) => p.score), 1);
+  const topByLikes = [...posts].sort((a, b) => b.likes - a.likes);
+  const feedPosts = showAllFeed ? posts : topByLikes.slice(0, 5);
+  const maxScore = Math.max(...posts.map((p) => p.score), 1);
 
   return (
     <div className={styles.page}>
@@ -132,13 +129,12 @@ export default function DashboardPage() {
               <span className={styles.sectionTitle}>
                 {showAllFeed ? "Все посты" : "Топ постов"}
               </span>
-              <span className={styles.feedCount}>{filtered.length} постов</span>
+              <span className={styles.feedCount}>{posts.length} постов</span>
             </div>
-            <FilterBar categories={categories} active={filter} onChange={setFilter} />
             <div className={styles.feed} role="feed">
               {status === "loading" && posts.length === 0 ? (
                 <div className={styles.emptyState}><span className={styles.emptyIcon}>◌</span>Загружаем данные...</div>
-              ) : filtered.length === 0 ? (
+              ) : posts.length === 0 ? (
                 <div className={styles.emptyState}><span className={styles.emptyIcon}>◌</span>{posts.length === 0 ? "Постов пока нет" : "В этой категории нет постов"}</div>
               ) : (
                 feedPosts.map((post, i) => (
@@ -151,12 +147,12 @@ export default function DashboardPage() {
                 ))
               )}
             </div>
-            {filtered.length > 5 && (
+            {posts.length > 5 && (
               <button
                 className={styles.showAllBtn}
                 onClick={() => setShowAllFeed((v) => !v)}
               >
-                {showAllFeed ? "Свернуть" : `Показать все ${filtered.length} постов`}
+                {showAllFeed ? "Свернуть" : `Показать все ${posts.length} постов`}
               </button>
             )}
           </div>

@@ -5,11 +5,11 @@ import styles from "./StatsGrid.module.css";
 interface StatsGridProps { stats: Stats | null; loading: boolean; }
 
 const CARDS = [
-  { key: "views" as keyof Stats, label: "просмотры", icon: "◎", accent: false },
-  { key: "likes" as keyof Stats, label: "лайки", icon: "♥", accent: false },
-  { key: "reposts" as keyof Stats, label: "репосты", icon: "⟳", accent: false },
-  { key: "score" as keyof Stats, label: "score", icon: "★", accent: true },
-  { key: "posts" as keyof Stats, label: "постов", icon: "▤", accent: false },
+  { key: "views" as keyof Stats, label: "просмотры", icon: "👁", accent: false },
+  { key: "likes" as keyof Stats, label: "лайки", icon: "❤️", accent: false },
+  { key: "reposts" as keyof Stats, label: "репосты", icon: "🔁", accent: false },
+  { key: "score" as keyof Stats, label: "score", icon: "⚡", accent: true },
+  { key: "posts" as keyof Stats, label: "постов", icon: "📝", accent: false },
 ];
 
 export default function StatsGrid({ stats, loading }: StatsGridProps) {

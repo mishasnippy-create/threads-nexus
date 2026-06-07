@@ -1,14 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
 
 :root {
-  /* Carbon + green theme */
-  --bg: #0a0a0a;
-  --bg2: #0f0f0f;
-  --bg3: #141414;
-  --bg4: #1a1a1a;
+  --bg: #0d0d0d;
+  --bg2: #111111;
+  --bg3: #161616;
+  --bg4: #1b1b1b;
   --bg5: #202020;
   --border: rgba(255, 255, 255, 0.07);
-  --border2: rgba(255, 255, 255, 0.11);
+  --border2: rgba(255, 255, 255, 0.12);
   --border3: rgba(200, 255, 0, 0.18);
   --text: #edecea;
   --text2: #8a8a8a;
@@ -24,7 +23,6 @@
   --red: #ff4d4d;
   --red-dim: rgba(255, 77, 77, 0.1);
   --violet: #a78bfa;
-  --carbon-overlay: rgba(20, 60, 10, 0.12);
 }
 
 *,
@@ -44,38 +42,31 @@ html {
 }
 
 body {
-  background-color: var(--bg);
+  background-color: #0d0d0d;
+  /* Carbon weave pattern */
   background-image:
     repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,0.013) 0px,
-      rgba(255,255,255,0.013) 1px,
+      rgba(255,255,255,0.018) 0px,
+      rgba(255,255,255,0.018) 1px,
       transparent 1px,
-      transparent 50%
+      transparent 6px
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255,255,255,0.013) 0px,
-      rgba(255,255,255,0.013) 1px,
+      rgba(255,255,255,0.018) 0px,
+      rgba(255,255,255,0.018) 1px,
       transparent 1px,
-      transparent 50%
-    );
-  background-size: 8px 8px;
+      transparent 6px
+    ),
+    /* subtle green tint layer */
+    radial-gradient(ellipse 100% 60% at 50% 0%, rgba(30,70,10,0.18) 0%, transparent 70%);
+  background-size: 6px 6px, 6px 6px, 100% 100%;
   color: var(--text);
   font-family: 'Syne', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
   max-width: 100vw;
-}
-
-/* Green tinted overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: var(--carbon-overlay);
-  pointer-events: none;
-  z-index: 0;
 }
 
 .mono {
