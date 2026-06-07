@@ -60,7 +60,7 @@ export default function Timeline({ posts }: Props) {
                   </div>
                   <p className={styles.text}>{post.text}</p>
                   <div className={styles.meta}>
-                    <span className={styles.stat}><span className={styles.ico}>👁</span>{fmt(post.views)}</span>
+                    <span className={styles.stat}><span className={styles.ico}>🔍</span>{fmt(post.views)}</span>
                     <span className={styles.stat}><span className={styles.ico}>❤️</span>{fmt(post.likes)}</span>
                     <span className={styles.stat}><span className={styles.ico}>🔁</span>{fmt(post.reposts)}</span>
                     <span className={`${styles.stat} ${styles.score}`}><span className={styles.ico}>⚡</span>{fmt(post.score)}</span>

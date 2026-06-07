@@ -47,15 +47,17 @@
 }
 
 .card {
-  background: var(--bg3);
-  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
   border-radius: 14px;
   padding: 16px 18px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   transition: border-color 0.18s ease;
 }
 
 .card:hover {
-  border-color: var(--border2);
+  border-color: rgba(255,255,255,0.15);
 }
 
 .cardTop {

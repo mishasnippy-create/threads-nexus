@@ -18,7 +18,7 @@ export default function PostCard({ post, isTop, scorePercent }: PostCardProps) {
       <p className={styles.text}>{text}</p>
       <div className={styles.meta}>
         {post.category && <span className={styles.cat}>{post.category}</span>}
-        <span className={styles.stat}><span className={styles.ico}>👁</span><span className={styles.val}>{fmt(post.views)}</span></span>
+        <span className={styles.stat}><span className={styles.ico}>🔍</span><span className={styles.val}>{fmt(post.views)}</span></span>
         <span className={styles.stat}><span className={styles.ico}>❤️</span><span className={styles.val}>{fmt(post.likes)}</span></span>
         <span className={styles.stat}><span className={styles.ico}>🔁</span><span className={styles.val}>{fmt(post.reposts)}</span></span>
         <span className={`${styles.stat} ${styles.scoreStat}`}><span className={styles.ico}>⚡</span><span className={styles.val}>{fmt(post.score)}</span></span>
