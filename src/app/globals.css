@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
 
 :root {
-  --bg: #111111;
+  --bg: #0e0e0e;
   --bg2: #141414;
   --bg3: rgba(255,255,255,0.04);
   --bg4: rgba(255,255,255,0.06);
@@ -42,24 +42,38 @@ html, body {
 }
 
 body {
-  /* Carbon fibre weave */
-  background-color: #111111;
+  /*
+    Carbon fibre weave — square cell pattern like woven fabric
+    Each 8×8 cell: horizontal highlight top, vertical highlight left,
+    dark fill bottom-right, giving the "over-under" woven look
+  */
+  background-color: #0e0e0e;
   background-image:
+    /* horizontal thread top highlight */
     repeating-linear-gradient(
-      45deg,
-      rgba(255,255,255,0.06) 0,
-      rgba(255,255,255,0.06) 1px,
-      transparent 0,
-      transparent 50%
+      0deg,
+      rgba(255,255,255,0.07) 0px,
+      rgba(255,255,255,0.07) 1px,
+      transparent 1px,
+      transparent 4px,
+      rgba(255,255,255,0.03) 4px,
+      rgba(255,255,255,0.03) 5px,
+      transparent 5px,
+      transparent 8px
     ),
+    /* vertical thread left highlight */
     repeating-linear-gradient(
-      -45deg,
-      rgba(255,255,255,0.06) 0,
-      rgba(255,255,255,0.06) 1px,
-      transparent 0,
-      transparent 50%
+      90deg,
+      rgba(255,255,255,0.07) 0px,
+      rgba(255,255,255,0.07) 1px,
+      transparent 1px,
+      transparent 4px,
+      rgba(255,255,255,0.03) 4px,
+      rgba(255,255,255,0.03) 5px,
+      transparent 5px,
+      transparent 8px
     );
-  background-size: 6px 6px;
+  background-size: 8px 8px;
   color: var(--text);
   font-family: 'Syne', sans-serif;
 }

@@ -13,6 +13,12 @@
 
 .wrap {
   padding-bottom: 24px;
+  background: rgba(13, 13, 13, 0.92);
+  backdrop-filter: blur(0px);
+}
+
+.section {
+  background: transparent;
 }
 
 .empty {
