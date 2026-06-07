@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [tab, setTab] = useState<Tab>("feed");
   const [lastUpdate, setLastUpdate] = useState("");
+  const [showAllFeed, setShowAllFeed] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -90,7 +91,6 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update lastUpdate label every 10s
   useEffect(() => {
     const iv = setInterval(() => {
       if (status === "live") setLastUpdate((prev) => prev);
@@ -99,6 +99,9 @@ export default function DashboardPage() {
   }, [status]);
 
   const filtered = filter === "all" ? posts : posts.filter((p) => p.category === filter);
+  // Top-5 by likes for feed preview
+  const topByLikes = [...filtered].sort((a, b) => b.likes - a.likes);
+  const feedPosts = showAllFeed ? filtered : topByLikes.slice(0, 5);
   const maxScore = Math.max(...filtered.map((p) => p.score), 1);
 
   return (
@@ -126,7 +129,9 @@ export default function DashboardPage() {
         {tab === "feed" && (
           <div className={styles.feedSection}>
             <div className={styles.sectionHeader}>
-              <span className={styles.sectionTitle}>Лента постов</span>
+              <span className={styles.sectionTitle}>
+                {showAllFeed ? "Все посты" : "Топ постов"}
+              </span>
               <span className={styles.feedCount}>{filtered.length} постов</span>
             </div>
             <FilterBar categories={categories} active={filter} onChange={setFilter} />
@@ -136,7 +141,7 @@ export default function DashboardPage() {
               ) : filtered.length === 0 ? (
                 <div className={styles.emptyState}><span className={styles.emptyIcon}>◌</span>{posts.length === 0 ? "Постов пока нет" : "В этой категории нет постов"}</div>
               ) : (
-                filtered.map((post, i) => (
+                feedPosts.map((post, i) => (
                   <PostCard
                     key={`${post.threadId || post.id}-${i}`}
                     post={post}
@@ -146,6 +151,14 @@ export default function DashboardPage() {
                 ))
               )}
             </div>
+            {filtered.length > 5 && (
+              <button
+                className={styles.showAllBtn}
+                onClick={() => setShowAllFeed((v) => !v)}
+              >
+                {showAllFeed ? "Свернуть" : `Показать все ${filtered.length} постов`}
+              </button>
+            )}
           </div>
         )}
 

@@ -10,33 +10,29 @@ interface HeaderProps {
   lastUpdate: string;
 }
 
-export default function Header({ status, countdown, onRefresh, totalPosts, totalViews, lastUpdate }: HeaderProps) {
-  const statusLabel = status === "live" ? "в эфире" : status === "loading" ? "синхронизация..." : status === "error" ? "ошибка" : "ожидание";
+export default function Header({ status, countdown, onRefresh }: HeaderProps) {
   return (
     <header className={styles.header}>
-      <div className={styles.top}>
-        <div className={styles.left}>
+      <div className={styles.inner}>
+        <div className={styles.logoWrap}>
           <span className={styles.logo}>THREADS OS</span>
-          <span className={styles.subtitle}>Nexus Control Center</span>
-        </div>
-        <div className={styles.right}>
-          <div className={styles.statusGroup}>
+          <span className={styles.statusGroup}>
             <span className={styles.dot} data-status={status} aria-hidden="true" />
-            <span className={styles.statusText}>{statusLabel}</span>
+            <span className={styles.statusText}>
+              {status === "live" ? "в эфире" : status === "loading" ? "синхронизация..." : status === "error" ? "ошибка" : "ожидание"}
+            </span>
             {status === "live" && <span className={styles.countdown}>{countdown}с</span>}
-          </div>
-          <button className={styles.refreshBtn} onClick={onRefresh} disabled={status === "loading"} aria-label="Обновить">↻</button>
+          </span>
         </div>
+        <button
+          className={styles.refreshBtn}
+          onClick={onRefresh}
+          disabled={status === "loading"}
+          aria-label="Обновить"
+        >
+          ↻
+        </button>
       </div>
-      {totalPosts > 0 && (
-        <div className={styles.meta}>
-          <span>{totalPosts} постов</span>
-          <span className={styles.dot2} />
-          <span>{(totalViews / 1000).toFixed(1)}K просмотров</span>
-          <span className={styles.dot2} />
-          <span>обновлено {lastUpdate}</span>
-        </div>
-      )}
     </header>
   );
 }

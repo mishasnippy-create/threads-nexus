@@ -1,23 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
 
 :root {
-  --bg: #050505;
-  --bg2: #0a0a0a;
-  --bg3: #111111;
-  --bg4: #161616;
-  --bg5: #1c1c1c;
+  /* Carbon + green theme */
+  --bg: #0a0a0a;
+  --bg2: #0f0f0f;
+  --bg3: #141414;
+  --bg4: #1a1a1a;
+  --bg5: #202020;
   --border: rgba(255, 255, 255, 0.07);
-  --border2: rgba(255, 255, 255, 0.12);
-  --border3: rgba(255, 255, 255, 0.18);
-  --text: #f0eee8;
-  --text2: #888888;
+  --border2: rgba(255, 255, 255, 0.11);
+  --border3: rgba(200, 255, 0, 0.18);
+  --text: #edecea;
+  --text2: #8a8a8a;
   --text3: #555555;
   --text4: #333333;
   --accent: #c8ff00;
-  --accent-dim: rgba(200, 255, 0, 0.15);
-  --accent-faint: rgba(200, 255, 0, 0.06);
+  --accent-dim: rgba(200, 255, 0, 0.13);
+  --accent-faint: rgba(200, 255, 0, 0.05);
+  --green: #c8ff00;
+  --purple: #a78bfa;
+  --blue: #4d9eff;
+  --orange: #ff8c42;
   --red: #ff4d4d;
   --red-dim: rgba(255, 77, 77, 0.1);
+  --violet: #a78bfa;
+  --carbon-overlay: rgba(20, 60, 10, 0.12);
 }
 
 *,
@@ -38,11 +45,37 @@ html {
 
 body {
   background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.013) 0px,
+      rgba(255,255,255,0.013) 1px,
+      transparent 1px,
+      transparent 50%
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255,255,255,0.013) 0px,
+      rgba(255,255,255,0.013) 1px,
+      transparent 1px,
+      transparent 50%
+    );
+  background-size: 8px 8px;
   color: var(--text);
   font-family: 'Syne', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
   max-width: 100vw;
+}
+
+/* Green tinted overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--carbon-overlay);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .mono {
