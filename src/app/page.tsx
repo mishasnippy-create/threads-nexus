@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(REFRESH_INTERVAL);
-  const [tab, setTab] = useState<Tab>("feed");
+  const [tab, setTab] = useState<Tab>("analytics");
   const [lastUpdate, setLastUpdate] = useState("");
   const [showAllFeed, setShowAllFeed] = useState(false);
 

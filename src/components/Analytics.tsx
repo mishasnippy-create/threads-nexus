@@ -7,6 +7,13 @@ interface Props { posts: Post[]; }
 
 type Period = "today" | "yesterday" | "week" | "month";
 type Metric = "views" | "likes" | "reposts" | "score";
+type CatPeriod = "all" | "month" | "week";
+
+const CAT_PERIOD_LABELS: Record<CatPeriod, string> = {
+  all: "Всё время",
+  month: "Месяц",
+  week: "Неделя",
+};
 
 const METRIC_LABELS: Record<Metric, string> = {
   views: "Просмотры",
@@ -120,13 +127,27 @@ export default function Analytics({ posts }: Props) {
 
   const [period, setPeriod] = useState<Period>("week");
   const [catMetric, setCatMetric] = useState<Metric>("views");
+  const [catPeriod, setCatPeriod] = useState<CatPeriod>("all");
 
   const periodPosts = getPeriodPosts(posts, period);
   const dayData = getDayData(posts, period);
 
-  // Category stats across ALL posts
+  // Posts filtered for the category block period
+  const now = new Date();
+  const todayStart = startOf(now).getTime();
+  const catWeekStart = todayStart - 6 * 86400000;
+  const catMonthStart = todayStart - 29 * 86400000;
+  const catPosts = posts.filter((p) => {
+    if (catPeriod === "all") return true;
+    const t = new Date(p.time).getTime();
+    if (catPeriod === "week") return t >= catWeekStart;
+    if (catPeriod === "month") return t >= catMonthStart;
+    return true;
+  });
+
+  // Category stats (sums) for selected period
   const catStats: Record<string, Record<Metric, number> & { count: number }> = {};
-  posts.forEach((p) => {
+  catPosts.forEach((p) => {
     const c = p.category || "Без категории";
     if (!catStats[c]) catStats[c] = { views: 0, likes: 0, reposts: 0, score: 0, count: 0 };
     catStats[c].views += p.views;
@@ -136,7 +157,7 @@ export default function Analytics({ posts }: Props) {
     catStats[c].count += 1;
   });
   const cats = Object.keys(catStats).sort(
-    (a, b) => (catStats[b][catMetric] / catStats[b].count) - (catStats[a][catMetric] / catStats[a].count)
+    (a, b) => catStats[b][catMetric] - catStats[a][catMetric]
   );
 
   // Hour stats
@@ -239,7 +260,7 @@ export default function Analytics({ posts }: Props) {
       // 2. Category horizontal bars
       if (catRef.current) {
         destroy(catRef);
-        const vals = cats.map((c) => Math.round(catStats[c][catMetric] / catStats[c].count));
+        const vals = cats.map((c) => catStats[c][catMetric]);
         const maxVal = Math.max(...vals, 1);
         charts.push(new C(catRef.current, {
           type: "bar",
@@ -344,7 +365,7 @@ export default function Analytics({ posts }: Props) {
       (charts as any[]).forEach((c) => { try { c.destroy(); } catch {} });
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [posts, catMetric, period]);
+  }, [posts, catMetric, period, catPeriod]);
 
   if (posts.length === 0) {
     return <div className={styles.empty}>◌<br />Нет данных для анализа</div>;
@@ -400,22 +421,55 @@ export default function Analytics({ posts }: Props) {
       <div className={styles.section}>
         <div className={styles.sectionHead}>
           <div className={styles.sectionTitle}>Топ категории</div>
-          <div className={styles.metricTabs}>
-            {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
+          <div className={styles.periodTabs}>
+            {(Object.keys(CAT_PERIOD_LABELS) as CatPeriod[]).map((p) => (
               <button
-                key={m}
-                className={`${styles.mTab} ${catMetric === m ? styles.mTabActive : ""}`}
-                onClick={() => setCatMetric(m)}
-                style={catMetric === m ? { borderColor: COLORS[m], color: COLORS[m] } : {}}
+                key={p}
+                className={`${styles.mTab} ${catPeriod === p ? styles.mTabActive : ""}`}
+                onClick={() => setCatPeriod(p)}
               >
-                {METRIC_LABELS[m]}
+                {CAT_PERIOD_LABELS[p]}
               </button>
             ))}
           </div>
         </div>
-        <div className={styles.chartWrap} style={{ height: Math.max(cats.length * 34 + 20, 120) }}>
-          <canvas ref={catRef} role="img" aria-label="Метрики по категориям" />
+        <div className={styles.metricTabs}>
+          {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
+            <button
+              key={m}
+              className={`${styles.mTab} ${catMetric === m ? styles.mTabActive : ""}`}
+              onClick={() => setCatMetric(m)}
+              style={catMetric === m ? { borderColor: COLORS[m], color: COLORS[m] } : {}}
+            >
+              {METRIC_LABELS[m]}
+            </button>
+          ))}
         </div>
+        {cats.length === 0 ? (
+          <div className={styles.noPosts}>Нет постов за этот период</div>
+        ) : (
+          <>
+            <div className={styles.chartWrap} style={{ height: Math.max(cats.length * 34 + 20, 120) }}>
+              <canvas ref={catRef} role="img" aria-label="Метрики по категориям" />
+            </div>
+            <div className={styles.topList} style={{ marginTop: 14 }}>
+              {cats.map((c) => (
+                <div key={c} className={styles.topItem}>
+                  <div className={styles.topContent}>
+                    <p className={styles.topText} style={{ fontWeight: 700 }}>{c}</p>
+                    <div className={styles.topMeta}>
+                      <span className={styles.topStat} style={{ color: COLORS.views }}>🔍 {catStats[c].views.toLocaleString()}</span>
+                      <span className={styles.topStat} style={{ color: COLORS.likes }}>❤️ {catStats[c].likes.toLocaleString()}</span>
+                      <span className={styles.topStat} style={{ color: COLORS.reposts }}>🔁 {catStats[c].reposts.toLocaleString()}</span>
+                      <span className={styles.topStat} style={{ color: COLORS.score }}>⚡ {catStats[c].score.toLocaleString()}</span>
+                      <span className={styles.topCat}>{catStats[c].count} постов</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Просмотры по периоду */}
